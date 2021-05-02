@@ -14,7 +14,9 @@ The program should have a simple graphical user interface.
 - Using gofmt to structure the code according to the golang standards
 - Variable names should be indicative of their purpose
 
+#### Naming conventions
+- Using camelCase and PascalCase, for private and public access respectively.
+
 #### Acknowledgement
 This publication has included material from the EDICT and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. 
 See http://www.edrdg.org/1
-
