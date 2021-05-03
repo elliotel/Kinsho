@@ -10,12 +10,14 @@ import (
 	"log"
 )
 
-func DisplayGUI() {
+func displayGUI() {
 	f := app.New()
+
+	parseDoc()
 
 	w := f.NewWindow("")
 
-	f.Settings().SetTheme(&lightTheme{})
+	f.Settings().SetTheme(&japaneseTheme{})
 
 	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
 	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
@@ -30,21 +32,18 @@ func DisplayGUI() {
 	)
 
 	if err != nil {
-		//Error handling
-		log.Println(err)
+		log.Fatal(err)
 	}
 
-	darkThemeOn := false
 	b1 := widget.NewButton("Toggle Theme", func() {
-		if !darkThemeOn {
-			f.Settings().SetTheme(&darkTheme{})
-			darkThemeOn = true
+		if themeVariant != 0 {
+			setDarkTheme()
 			logo.SetResource(darkResource)
 		} else {
-			f.Settings().SetTheme(&lightTheme{})
-			darkThemeOn = false
+			setLightTheme()
 			logo.SetResource(lightResource)
 		}
+		f.Settings().SetTheme(&japaneseTheme{})
 		logo.Refresh()
 	})
 
