@@ -5,7 +5,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-
+	"fyne.io/fyne/v2/theme"
 	//"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
@@ -16,19 +16,22 @@ type image struct {
 	url string
 }
 
+
+
 func main() {
 	//image := canvas.NewImageFromFile("jisho_logo.png")
 	//image.SetMinSize(fyne.Size{Width: 150, Height: 150})
 	//image.FillMode = canvas.ImageFillContain
 
 	f := app.New()
+
 	w := f.NewWindow("")
 
+	f.Settings().SetTheme(theme.LightTheme())
 
-	resource, err := fyne.LoadResourceFromPath("jisho_logo.png")
-
-	i1 := widget.NewIcon(resource)
-	i1.ExtendBaseWidget(i1)
+	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
+	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
+	logo := widget.NewIcon(lightResource)
 	string := "This publication has included material from the EDICT and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/1"
 	bottomText := widget.NewLabel(string)
 	bottomText.Wrapping = fyne.TextWrapWord
@@ -43,10 +46,21 @@ func main() {
 		log.Println(err)
 	}
 
+	darkTheme := false
+	b1 := widget.NewButton("Toggle Theme", func() {
+		if !darkTheme {
+			f.Settings().SetTheme(theme.DarkTheme())
+			darkTheme = true
+			logo.SetResource(darkResource)
+		} else {
+			f.Settings().SetTheme(theme.LightTheme())
+			darkTheme = false
+			logo.SetResource(lightResource)
+		}
+		logo.Refresh()
+	})
 
-	b1 := widget.NewButton("Placeholder1", func() { /*Do something*/ })
-
-	b2 := widget.NewButton("Placeholder2", func() { /*Do something else*/ })
+	b2 := widget.NewButton("Placeholder2", func() { /*Do something*/ })
 	
 	buttons := container.New(
 		layout.NewGridLayoutWithRows(2),
@@ -80,7 +94,7 @@ func main() {
 			container.New(
 
 			layout.NewGridLayout(1),
-			i1,
+			logo,
 				container.New(
 			layout.NewBorderLayout(
 				nil,
