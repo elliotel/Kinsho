@@ -5,16 +5,19 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/theme"
 	//"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"log"
 )
 
+/*
 type image struct {
 	url string
 }
+
+ */
+
 
 
 
@@ -27,7 +30,7 @@ func main() {
 
 	w := f.NewWindow("")
 
-	f.Settings().SetTheme(theme.LightTheme())
+	f.Settings().SetTheme(&lightTheme{})
 
 	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
 	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
@@ -46,15 +49,15 @@ func main() {
 		log.Println(err)
 	}
 
-	darkTheme := false
+	darkThemeOn := false
 	b1 := widget.NewButton("Toggle Theme", func() {
-		if !darkTheme {
-			f.Settings().SetTheme(theme.DarkTheme())
-			darkTheme = true
+		if !darkThemeOn {
+			f.Settings().SetTheme(&darkTheme{})
+			darkThemeOn = true
 			logo.SetResource(darkResource)
 		} else {
-			f.Settings().SetTheme(theme.LightTheme())
-			darkTheme = false
+			f.Settings().SetTheme(&lightTheme{})
+			darkThemeOn = false
 			logo.SetResource(lightResource)
 		}
 		logo.Refresh()
