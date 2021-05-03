@@ -12,7 +12,7 @@ type lightTheme struct{}
 var _ fyne.Theme = (*lightTheme)(nil)
 
 func (*lightTheme) Font(s fyne.TextStyle) fyne.Resource {
-	return resourceCWindowsFontsUDDIGIKYOKASHONRTTC
+	return resourceCWINDOWSFontsMEIRYOTTC
 }
 
 func (*lightTheme) Color(n fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color {
