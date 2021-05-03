@@ -65,9 +65,9 @@ func displayGUI() {
 		canvas.Refresh(results)
 	})
 
-	search := container.New(layout.NewBorderLayout(nil,nil,nil,searchButton), searchButton, input)
+	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
 
-	findings := container.New(layout.NewHBoxLayout(),results)
+	findings := container.New(layout.NewHBoxLayout(), results)
 	searchAndResult := container.New(layout.NewVBoxLayout(), search, findings)
 
 	w.SetContent(
@@ -96,7 +96,6 @@ func displayGUI() {
 			bottomBox,
 		),
 	)
-
 
 	w.Resize(fyne.Size{Height: 360, Width: 640})
 
