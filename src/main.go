@@ -2,7 +2,7 @@ package main
 
 func main() {
 
-	parseDoc()
-	displayGUI()
-
+	complete := make(chan struct{})
+	inOut := make(chan string)
+	displayGUI(inOut,complete)
 }
