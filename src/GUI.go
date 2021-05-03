@@ -10,8 +10,10 @@ import (
 	"log"
 )
 
-func DisplayGUI() {
+func displayGUI() {
 	f := app.New()
+
+	parseDoc()
 
 	w := f.NewWindow("")
 
@@ -30,8 +32,7 @@ func DisplayGUI() {
 	)
 
 	if err != nil {
-		//Error handling
-		log.Println(err)
+		log.Fatal(err)
 	}
 
 	darkThemeOn := false
