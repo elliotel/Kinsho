@@ -2,6 +2,7 @@ package main
 
 func main() {
 
-	displayGUI()
-
+	complete := make(chan struct{})
+	inOut := make(chan string)
+	displayGUI(inOut,complete)
 }

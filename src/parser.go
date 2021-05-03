@@ -1,30 +1,56 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
+	"encoding/xml"
 	"log"
 	"os"
 	"strings"
 )
 
-func parseDoc() {
-	file, err := os.Open("edict2.txt")
+type Result struct {
+}
+
+func parseDoc(inOut chan string, complete chan struct{}) {
+
+	input :=<- inOut
+	xmlFile, err := os.Open("JMdict_e")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close()
+	defer xmlFile.Close()
 
-	searchTerm := "stockholm"
+	decoder := xml.NewDecoder(xmlFile)
+	decoder.Strict = false
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if strings.Contains(strings.ToLower(scanner.Text()), strings.ToLower(searchTerm)) {
-			fmt.Println(scanner.Text())
+	var hiragana string
+	for {
+		token, _ := decoder.Token()
+		if token == nil {
+			break
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		switch startElement := token.(type) {
+		case xml.StartElement:
+			if startElement.Name.Local == "reb"{
+				token, _ := decoder.Token()
+				switch token.(type) {
+				case xml.CharData:
+					hiragana = string([]byte(token.(xml.CharData)))
+				}
+			}
+			if startElement.Name.Local == "gloss" {
+				token, _ := decoder.Token()
+				switch token.(type) {
+				case xml.CharData:
+					def := string([]byte(token.(xml.CharData)))
+					if strings.Contains(strings.ToLower(def), input){
+						select {
+						case <-complete:
+							return
+						case inOut <- hiragana + "\n" + def:
+						}
+					}
+				}
+			}
+		}
 	}
 }

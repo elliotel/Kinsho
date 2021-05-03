@@ -8,12 +8,11 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"log"
+	"strings"
 )
 
-func displayGUI() {
+func displayGUI(inOut chan string, complete chan struct{}) {
 	f := app.New()
-
-	parseDoc()
 
 	w := f.NewWindow("")
 
@@ -61,8 +60,11 @@ func displayGUI() {
 	results := widget.NewLabel("results")
 
 	searchButton := widget.NewButton("Search", func() {
-		results.SetText("Results for " + input.Text)
+		go parseDoc(inOut,complete)
+		inOut <- strings.ToLower(input.Text)
+		results.SetText(<-inOut)
 		canvas.Refresh(results)
+		complete <- struct{}{}
 	})
 
 	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
