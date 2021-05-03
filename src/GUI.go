@@ -5,27 +5,12 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	//"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"log"
 )
 
-/*
-type image struct {
-	url string
-}
-
- */
-
-
-
-
-func main() {
-	//image := canvas.NewImageFromFile("jisho_logo.png")
-	//image.SetMinSize(fyne.Size{Width: 150, Height: 150})
-	//image.FillMode = canvas.ImageFillContain
-
+func DisplayGUI() {
 	f := app.New()
 
 	w := f.NewWindow("")
@@ -64,7 +49,7 @@ func main() {
 	})
 
 	b2 := widget.NewButton("Placeholder2", func() { /*Do something*/ })
-	
+
 	buttons := container.New(
 		layout.NewGridLayoutWithRows(2),
 		b1,
@@ -93,28 +78,28 @@ func main() {
 				bottomBox,
 				nil,
 				nil,
-				),
+			),
 			container.New(
 
-			layout.NewGridLayout(1),
-			logo,
+				layout.NewGridLayout(1),
+				logo,
 				container.New(
-			layout.NewBorderLayout(
-				nil,
-				nil,
-				buttons,
-				nil,
+					layout.NewBorderLayout(
+						nil,
+						nil,
+						buttons,
+						nil,
+					),
+					buttons,
+					searchAndResult,
 				),
-				buttons,
-			searchAndResult,
-		),
-	),
-	bottomBox,
+			),
+			bottomBox,
 		),
 	)
 
 
-	w.Resize(fyne.Size{Height: 320, Width: 480})
+	w.Resize(fyne.Size{Height: 360, Width: 640})
 
 	w.ShowAndRun()
 }
