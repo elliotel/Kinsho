@@ -46,7 +46,10 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 		logo.Refresh()
 	})
 
-	b2 := widget.NewButton("Placeholder2", func() { /*Do something*/ })
+	b2 := widget.NewButton("Update JMdict", func() {
+		downloadJMdict()
+		decompressAndDeleteGZ(archiveName)
+	})
 
 	buttons := container.New(
 		layout.NewGridLayoutWithRows(2),

@@ -13,7 +13,7 @@ type Result struct {
 func parseDoc(inOut chan string, complete chan struct{}) {
 
 	input :=<- inOut
-	xmlFile, err := os.Open("JMdict_e")
+	xmlFile, err := os.Open(resultName)
 	if err != nil {
 		log.Fatal(err)
 	}
