@@ -13,8 +13,6 @@ import (
 func displayGUI() {
 	f := app.New()
 
-	parseDoc()
-
 	w := f.NewWindow("")
 
 	f.Settings().SetTheme(&japaneseTheme{})
