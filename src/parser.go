@@ -1,30 +1,40 @@
 package main
 
 import (
-	"bufio"
+	"encoding/xml"
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
+type Result struct {
+}
+
 func parseDoc() {
-	file, err := os.Open("edict2.txt")
+	xmlFile, err := os.Open("JMdict_e")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close()
+	defer xmlFile.Close()
 
-	searchTerm := "stockholm"
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if strings.Contains(strings.ToLower(scanner.Text()), strings.ToLower(searchTerm)) {
-			fmt.Println(scanner.Text())
+	decoder := xml.NewDecoder(xmlFile)
+	decoder.Strict = false
+	for {
+		token, _ := decoder.Token()
+		if token == nil {
+			break
 		}
-	}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		switch startElement := token.(type) {
+		case xml.StartElement:
+			if startElement.Name.Local == "gloss" {
+				token, _ := decoder.Token()
+				switch token.(type) {
+				case xml.CharData:
+
+					fmt.Println(string([]byte(token.(xml.CharData))))
+				}
+			}
+		}
 	}
 }
