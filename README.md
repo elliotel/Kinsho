@@ -19,4 +19,4 @@ The program should have a simple graphical user interface.
 
 #### Acknowledgement
 This publication has included material from the EDICT and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. 
-See http://www.edrdg.org/1
+See http://www.edrdg.org/
