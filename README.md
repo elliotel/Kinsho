@@ -13,8 +13,6 @@ The program should have a simple graphical user interface.
 #### Coding conventions
 - Using gofmt to structure the code according to the golang standards
 - Variable names should be indicative of their purpose
-
-#### Naming conventions
 - Using camelCase and PascalCase, for private and public access respectively.
 
 #### Acknowledgement
