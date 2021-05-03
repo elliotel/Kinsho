@@ -4,6 +4,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 	"image/color"
+	"os"
 )
 
 type darkTheme struct{}
@@ -12,7 +13,12 @@ type darkTheme struct{}
 var _ fyne.Theme = (*darkTheme)(nil)
 
 func (*darkTheme) Font(s fyne.TextStyle) fyne.Resource {
-	return resourceCWINDOWSFontsMEIRYOTTC
+	font := os.Getenv("FYNE_FONT")
+	if font == "" {
+		return resourceCWINDOWSFontsMEIRYOTTC
+	} else {
+		return theme.DefaultTheme().Font(s)
+	}
 }
 
 func (*darkTheme) Color(n fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color {
