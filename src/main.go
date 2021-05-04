@@ -10,7 +10,7 @@ import (
 
 const (
 	archiveName = "JMdict_e.gz"
-	resultName = "JMdict_e"
+	resultName  = "JMdict_e"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 	}
 	complete := make(chan struct{})
 	inOut := make(chan string)
-	displayGUI(inOut,complete)
+	displayGUI(inOut, complete)
 }
 
 func downloadJMdict() {
