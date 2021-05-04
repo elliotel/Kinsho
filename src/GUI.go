@@ -63,11 +63,16 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 	results := widget.NewLabel("results")
 
 	searchButton := widget.NewButton("Search", func() {
-		go parseDoc(inOut,complete)
+		go parseDoc(inOut, complete)
 		inOut <- strings.ToLower(input.Text)
-		results.SetText(<-inOut)
+		select {
+		case response := <-inOut:
+			results.SetText(response)
+			complete <- struct{}{}
+		case <-complete:
+			results.SetText("No results found for \"" + input.Text + "\"")
+		}
 		canvas.Refresh(results)
-		complete <- struct{}{}
 	})
 
 	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
