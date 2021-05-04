@@ -24,15 +24,15 @@ func (*japaneseTheme) Font(s fyne.TextStyle) fyne.Resource {
 }
 
 func (*japaneseTheme) Color(n fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color {
-	return theme.LightTheme().Color(n, (fyne.ThemeVariant)(themeVariant))
+	return theme.DefaultTheme().Color(n, (fyne.ThemeVariant)(themeVariant))
 }
 
 func (*japaneseTheme) Icon(n fyne.ThemeIconName) fyne.Resource {
-	return theme.LightTheme().Icon(n)
+	return theme.DefaultTheme().Icon(n)
 }
 
 func (*japaneseTheme) Size(n fyne.ThemeSizeName) float32 {
-	return theme.LightTheme().Size(n)
+	return theme.DefaultTheme().Size(n)
 }
 
 func setDarkTheme() {
