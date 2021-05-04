@@ -14,7 +14,7 @@ import (
 func displayGUI(inOut chan string, complete chan struct{}) {
 	f := app.New()
 
-	w := f.NewWindow("")
+	w := f.NewWindow("Our「辞書」Dictionary")
 
 	f.Settings().SetTheme(&japaneseTheme{})
 
