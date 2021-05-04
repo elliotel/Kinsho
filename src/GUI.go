@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func displayGUI(inOut chan string, complete chan struct{}) {
+func displayGUI(inputChan chan string, outputChan chan entry, complete chan struct{}) {
 	f := app.New()
 
 	w := f.NewWindow("Our「辞書」Dictionary")
@@ -63,17 +63,17 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 	results := widget.NewLabel("results")
 
 	searchButton := widget.NewButton("Search", func() {
-		go parseDoc(inOut, complete)
-		inOut <- strings.ToLower(input.Text)
+		go parseDoc(inputChan, outputChan, complete)
+		inputChan <- strings.ToLower(input.Text)
 		output := ""
 		found := false
 		finished := false
 
 		for !finished {
 			select {
-			case response := <-inOut:
+			case response := <-outputChan:
 				found = true
-				output += response
+				output += response.kanji + "\n" + response.kana + "\n" + response.def + "\n\n"
 				results.SetText(output)
 				canvas.Refresh(results)
 			case <-complete:

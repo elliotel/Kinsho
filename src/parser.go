@@ -2,17 +2,27 @@ package main
 
 import (
 	"encoding/xml"
+	"github.com/gojp/kana"
 	"log"
 	"os"
 	"strings"
 )
 
-type Result struct {
+const (
+	entryAmount = 20
+)
+
+type entry struct {
+	kanji string
+	kana string
+	def string
 }
 
-func parseDoc(inOut chan string, complete chan struct{}) {
+func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct{}) {
 
-	input := <-inOut
+	input := <-inputChan
+	inputHiragana := kana.RomajiToHiragana(input)
+	inputKatakana := kana.RomajiToKatakana(input)
 	xmlFile, err := os.Open(resultName)
 	if err != nil {
 		log.Fatal(err)
@@ -22,32 +32,41 @@ func parseDoc(inOut chan string, complete chan struct{}) {
 	decoder := xml.NewDecoder(xmlFile)
 	decoder.Strict = false
 
-	var hiragana string
-	for {
+
+
+	entries := make([]entry, entryAmount)
+	i := 0
+
+	for i < entryAmount {
 		token, _ := decoder.Token()
 		if token == nil {
 			break
 		}
-		switch startElement := token.(type) {
+		switch element := token.(type) {
 		case xml.StartElement:
-			if startElement.Name.Local == "reb" {
-				token, _ := decoder.Token()
-				switch token.(type) {
-				case xml.CharData:
-					hiragana = string(token.(xml.CharData))
-				}
+			startElement := element.Name.Local
+			token, _ := decoder.Token()
+			switch startElement {
+			case "keb":
+				entries[i].kanji = string(token.(xml.CharData))
+			case "reb":
+				entries[i].kana = string(token.(xml.CharData))
+			case "gloss":
+				entries[i].def = string(token.(xml.CharData))
 			}
-			if startElement.Name.Local == "gloss" {
-				token, _ := decoder.Token()
-				switch token.(type) {
-				case xml.CharData:
-					def := string(token.(xml.CharData))
-					if strings.Contains(strings.ToLower(def), input) {
-						inOut <- hiragana + "\n" + def + "\n\n"
-					}
+		case xml.EndElement:
+			if element.Name.Local == "entry" {
+				if strings.Contains(strings.ToLower(entries[i].def), input) ||
+					strings.Contains(strings.ToLower(entries[i].kana), input) ||
+					strings.Contains(strings.ToLower(entries[i].kanji), input) ||
+					strings.Contains(strings.ToLower(entries[i].kana), inputHiragana) ||
+					strings.Contains(strings.ToLower(entries[i].def), inputKatakana) {
+					outputChan <- entries[i]
+					i++
 				}
 			}
 		}
+
 	}
 	complete <- struct{}{}
 }

@@ -16,6 +16,7 @@ func main() {
 		decompressAndDeleteGZ(archiveName)
 	}
 	complete := make(chan struct{})
-	inOut := make(chan string)
-	displayGUI(inOut, complete)
+	inputChan := make(chan string)
+	outputChan := make(chan entry)
+	displayGUI(inputChan, outputChan, complete)
 }
