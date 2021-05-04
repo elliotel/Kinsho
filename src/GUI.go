@@ -65,20 +65,35 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 	searchButton := widget.NewButton("Search", func() {
 		go parseDoc(inOut, complete)
 		inOut <- strings.ToLower(input.Text)
-		select {
-		case response := <-inOut:
-			results.SetText(response)
-			complete <- struct{}{}
-		case <-complete:
-			results.SetText("No results found for \"" + input.Text + "\"")
+		output := ""
+		found := false
+		finished := false
+
+		for !finished {
+			select {
+			case response := <-inOut:
+				found = true
+				output += response
+				results.SetText(output)
+				canvas.Refresh(results)
+			case <-complete:
+				if !found {
+					results.SetText("No results found for \"" + input.Text + "\"")
+				}
+				finished = true
+			}
 		}
-		canvas.Refresh(results)
 	})
 
 	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
 
-	findings := container.New(layout.NewHBoxLayout(), results)
-	searchAndResult := container.New(layout.NewVBoxLayout(), search, findings)
+	findings := container.NewVScroll(results)
+	searchAndResult := container.New(layout.NewBorderLayout(
+		search,
+		nil,
+		nil,
+		nil,
+		), search, findings)
 
 	w.SetContent(
 		container.New(

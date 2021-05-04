@@ -43,11 +43,7 @@ func parseDoc(inOut chan string, complete chan struct{}) {
 				case xml.CharData:
 					def := string(token.(xml.CharData))
 					if strings.Contains(strings.ToLower(def), input) {
-						select {
-						case <-complete:
-							return
-						case inOut <- hiragana + "\n" + def:
-						}
+						inOut <- hiragana + "\n" + def + "\n\n"
 					}
 				}
 			}
