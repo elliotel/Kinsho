@@ -21,8 +21,8 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
 	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
 	logo := widget.NewIcon(lightResource)
-	string := "This publication has included material from the EDICT and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
-	bottomText := widget.NewLabel(string)
+	acknowledgement := "This publication has included material from the EDICT and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
+	bottomText := widget.NewLabel(acknowledgement)
 	bottomText.Wrapping = fyne.TextWrapWord
 	bottomText.Alignment = fyne.TextAlignCenter
 	bottomBox := container.New(
@@ -60,20 +60,26 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	input := widget.NewEntry()
 	input.SetPlaceHolder("search here")
 
-	results := widget.NewLabel("results")
+	results := widget.NewLabel("Enter a word!")
+	testFindings := container.NewVBox(results)
+	findings := container.NewVScroll(testFindings)
 
+	allResults := make([]fyne.CanvasObject, 20)
 	searchButton := widget.NewButton("Search", func() {
+    //flytta ner till ny func
 		go parseDoc(inputChan, outputChan, complete)
 		inputChan <- strings.ToLower(input.Text)
 		output := ""
 		found := false
 		finished := false
 
-		for !finished {
+		i := 0
+		for !finished && i < 20 {
 			select {
 			case response := <-outputChan:
 				found = true
-				output += response.kanji + "\n" + response.kana + "\n" + response.def + "\n\n"
+				allResults[i] = container.NewWithoutLayout(widget.NewLabel(response.kanji + "\n" + response.kana + "\n" + response.def))
+				i++
 				results.SetText(output)
 				canvas.Refresh(results)
 			case <-complete:
@@ -83,11 +89,16 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 				finished = true
 			}
 		}
+
+		for j := 0; j < i; j++ {
+		testFindings.Add(allResults[j])
+		testFindings.Refresh()
+		}
+
 	})
 
 	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
 
-	findings := container.NewVScroll(results)
 	searchAndResult := container.New(layout.NewBorderLayout(
 		search,
 		nil,
@@ -125,4 +136,8 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	w.Resize(fyne.Size{Height: 360, Width: 640})
 
 	w.ShowAndRun()
+}
+
+func listResults(){
+
 }
