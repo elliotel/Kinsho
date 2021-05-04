@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func displayGUI(inOut chan string, complete chan struct{}) {
+func displayGUI(inputChan chan string, outputChan chan entry, complete chan struct{}) {
 	f := app.New()
 
 	w := f.NewWindow("Our「辞書」Dictionary")
@@ -66,9 +66,9 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 
 	allResults := make([]fyne.CanvasObject, 20)
 	searchButton := widget.NewButton("Search", func() {
-		//flytta ner till ny func
-		go parseDoc(inOut, complete)
-		inOut <- strings.ToLower(input.Text)
+    //flytta ner till ny func
+		go parseDoc(inputChan, outputChan, complete)
+		inputChan <- strings.ToLower(input.Text)
 		output := ""
 		found := false
 		finished := false
@@ -76,9 +76,9 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 		i := 0
 		for !finished && i < 20 {
 			select {
-			case response := <-inOut:
+			case response := <-outputChan:
 				found = true
-				allResults[i] = container.NewWithoutLayout(widget.NewLabel(response))
+				allResults[i] = container.NewWithoutLayout(widget.NewLabel(response.kanji + "\n" + response.kana + "\n" + response.def))
 				i++
 				results.SetText(output)
 				canvas.Refresh(results)
