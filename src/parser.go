@@ -60,7 +60,7 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 					strings.Contains(strings.ToLower(entries[i].kana), input) ||
 					strings.Contains(strings.ToLower(entries[i].kanji), input) ||
 					strings.Contains(strings.ToLower(entries[i].kana), inputHiragana) ||
-					strings.Contains(strings.ToLower(entries[i].def), inputKatakana) {
+					strings.Contains(strings.ToLower(entries[i].kana), inputKatakana) {
 					outputChan <- entries[i]
 					i++
 				}
