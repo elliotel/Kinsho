@@ -60,41 +60,41 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	input := widget.NewEntry()
 	input.SetPlaceHolder("search here")
 
-	results := widget.NewLabel("Enter a word!")
-	testFindings := container.NewVBox(results)
-	findings := container.NewVScroll(testFindings)
+	allResults := make([]fyne.CanvasObject, entryAmount)
+	findings := container.NewVBox()
+	findingsScroll := container.NewVScroll(findings)
 
-	allResults := make([]fyne.CanvasObject, 20)
 	searchButton := widget.NewButton("Search", func() {
     //flytta ner till ny func
+		length := len(findings.Objects)
+		for er := 0; er < length; er++ {
+			findings.Remove(findings.Objects[len(findings.Objects) - 1])
+		}
+		canvas.Refresh(findings)
 		go parseDoc(inputChan, outputChan, complete)
 		inputChan <- strings.ToLower(input.Text)
-		output := ""
+		//output := ""
 		found := false
 		finished := false
-
 		i := 0
-		for !finished && i < 20 {
+		for !finished{
 			select {
 			case response := <-outputChan:
 				found = true
 				allResults[i] = container.NewWithoutLayout(widget.NewLabel(response.kanji + "\n" + response.kana + "\n" + response.def))
 				i++
-				results.SetText(output)
-				canvas.Refresh(results)
 			case <-complete:
 				if !found {
-					results.SetText("No results found for \"" + input.Text + "\"")
+					findings.Add(widget.NewLabel("No results found for \"" + input.Text + "\""))
 				}
 				finished = true
 			}
 		}
 
 		for j := 0; j < i; j++ {
-		testFindings.Add(allResults[j])
-		testFindings.Refresh()
+		findings.Add(allResults[j])
+		findings.Refresh()
 		}
-
 	})
 
 	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
@@ -104,7 +104,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		nil,
 		nil,
 		nil,
-		), search, findings)
+		), search, findingsScroll)
 
 	w.SetContent(
 		container.New(

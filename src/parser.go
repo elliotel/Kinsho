@@ -2,20 +2,24 @@ package main
 
 import (
 	"encoding/xml"
+	"fmt"
 	"github.com/gojp/kana"
 	"log"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 )
 
 const (
-	entryAmount = 20
+	entryAmount = 100
 )
 
 type entry struct {
 	kanji string
 	kana string
 	def string
+	priority int
 }
 
 func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct{}) {
@@ -34,10 +38,10 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 
 
 
-	entries := make([]entry, entryAmount)
-	i := 0
+	entries := make([]entry, 1)
 
-	for i < entryAmount {
+	index := 0
+	for {
 		token, _ := decoder.Token()
 		if token == nil {
 			break
@@ -48,25 +52,65 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 			token, _ := decoder.Token()
 			switch startElement {
 			case "keb":
-				entries[i].kanji = string(token.(xml.CharData))
+				kanji := string(token.(xml.CharData))
+				entries[index].kanji = kanji
+				if input == kanji {
+				}
+
 			case "reb":
-				entries[i].kana = string(token.(xml.CharData))
+				ganaKana := string(token.(xml.CharData))
+				entries[index].kana = ganaKana
+				if input == ganaKana {
+				}
 			case "gloss":
-				entries[i].def = string(token.(xml.CharData))
+				def := string(token.(xml.CharData))
+				entries[index].def = def
+				if input == def {
+				}
+			case "ke_pri":
+				entries[index].priority = 0
+				priority := string(token.(xml.CharData))
+				switch priority {
+				case "ichi1":
+					entries[index].priority += 10
+				case "ichi2":
+					entries[index].priority += 5
+				case "spec1":
+					entries[index].priority += 30
+				case "spec2":
+					entries[index].priority += 10
+				}
+				runes := []rune(priority)
+				if string(runes[0]) + string(runes[1]) == "nf" {
+					number, err := strconv.Atoi(string(runes[2]) + string(runes[3]))
+					if err != nil {
+						log.Fatal(err)
+					}
+					entries[index].priority += 49 - number
+				}
+
 			}
+
 		case xml.EndElement:
 			if element.Name.Local == "entry" {
-				if strings.Contains(strings.ToLower(entries[i].def), input) ||
-					strings.Contains(strings.ToLower(entries[i].kana), input) ||
-					strings.Contains(strings.ToLower(entries[i].kanji), input) ||
-					strings.Contains(strings.ToLower(entries[i].kana), inputHiragana) ||
-					strings.Contains(strings.ToLower(entries[i].kana), inputKatakana) {
-					outputChan <- entries[i]
-					i++
+				if strings.Contains(strings.ToLower(entries[index].def), input) ||
+					strings.Contains(strings.ToLower(entries[index].kana), input) ||
+					strings.Contains(strings.ToLower(entries[index].kanji), input) ||
+					strings.Contains(strings.ToLower(entries[index].kana), inputHiragana) ||
+					strings.Contains(strings.ToLower(entries[index].kana), inputKatakana) {
+					entries = append(entries, entry{})
+					index++
 				}
 			}
 		}
 
+	}
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].priority > entries[j].priority
+	})
+	for  i := 0; i < len(entries) && i < entryAmount; i++ {
+		fmt.Printf("Word: %s, Freq: %d\n", entries[i].kanji, entries[i].priority)
+		outputChan <- entries[i]
 	}
 	complete <- struct{}{}
 }
