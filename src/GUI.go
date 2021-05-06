@@ -65,10 +65,10 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	findingsScroll := container.NewVScroll(findings)
 
 	searchButton := widget.NewButton("Search", func() {
-    //flytta ner till ny func
+		//flytta ner till ny func
 		length := len(findings.Objects)
 		for er := 0; er < length; er++ {
-			findings.Remove(findings.Objects[len(findings.Objects) - 1])
+			findings.Remove(findings.Objects[len(findings.Objects)-1])
 		}
 		canvas.Refresh(findings)
 		go parseDoc(inputChan, outputChan, complete)
@@ -77,7 +77,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		found := false
 		finished := false
 		i := 0
-		for !finished{
+		for !finished {
 			select {
 			case response := <-outputChan:
 				found = true
@@ -93,8 +93,8 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		}
 
 		for j := 0; j < i; j++ {
-		findings.Add(allResults[j])
-		findings.Refresh()
+			findings.Add(allResults[j])
+			findings.Refresh()
 		}
 	})
 
@@ -105,7 +105,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		nil,
 		nil,
 		nil,
-		), search, findingsScroll)
+	), search, findingsScroll)
 
 	w.SetContent(
 		container.New(
@@ -139,6 +139,6 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	w.ShowAndRun()
 }
 
-func listResults(){
+func listResults() {
 
 }
