@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	entryAmount = 100
+	entryAmount = 150
 )
 
 type entry struct {
@@ -40,8 +40,10 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 
 	entries := make([]entry, 1)
 
+	test := 0
 	index := 0
 	for {
+		//fmt.Println(entries[test])
 		token, _ := decoder.Token()
 		if token == nil {
 			break
@@ -55,20 +57,22 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 				kanji := string(token.(xml.CharData))
 				entries[index].kanji = kanji
 				if input == kanji {
+					entries[index].priority += 100
 				}
 
 			case "reb":
 				ganaKana := string(token.(xml.CharData))
 				entries[index].kana = ganaKana
 				if input == ganaKana {
+					entries[index].priority += 100
 				}
 			case "gloss":
 				def := string(token.(xml.CharData))
 				entries[index].def = def
 				if input == def {
+					entries[index].priority += 100
 				}
 			case "ke_pri":
-				entries[index].priority = 0
 				priority := string(token.(xml.CharData))
 				switch priority {
 				case "ichi1":
@@ -98,9 +102,13 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 					strings.Contains(strings.ToLower(entries[index].kanji), input) ||
 					strings.Contains(strings.ToLower(entries[index].kana), inputHiragana) ||
 					strings.Contains(strings.ToLower(entries[index].kana), inputKatakana) {
+					if index == test && test != 0 {
+						fmt.Println(entries[index].kanji + " added " + " with " + strconv.Itoa(entries[index].priority) + " priority")
+					}
 					entries = append(entries, entry{})
 					index++
 				}
+				entries[index] = entry{}
 			}
 		}
 
@@ -108,9 +116,11 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].priority > entries[j].priority
 	})
-	for  i := 0; i < len(entries) && i < entryAmount; i++ {
-		fmt.Printf("Word: %s, Freq: %d\n", entries[i].kanji, entries[i].priority)
-		outputChan <- entries[i]
+	if !(entries[0].kanji == "" && entries[0].kana == "" && entries[0].priority == 0) {
+		for i := 0; i < len(entries) && i < entryAmount; i++ {
+			fmt.Printf("Word: %s, Freq: %d\n", entries[i].kanji, entries[i].priority)
+			outputChan <- entries[i]
+		}
 	}
 	complete <- struct{}{}
 }

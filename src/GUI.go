@@ -21,7 +21,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
 	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
 	logo := widget.NewIcon(lightResource)
-	acknowledgement := "This publication has included material from the EDICT and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
+	acknowledgement := "This publication has included material from the JMdict and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
 	bottomText := widget.NewLabel(acknowledgement)
 	bottomText.Wrapping = fyne.TextWrapWord
 	bottomText.Alignment = fyne.TextAlignCenter
@@ -81,6 +81,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 			select {
 			case response := <-outputChan:
 				found = true
+				log.Println("Found: " + response.kanji)
 				allResults[i] = container.NewWithoutLayout(widget.NewLabel(response.kanji + "\n" + response.kana + "\n" + response.def))
 				i++
 			case <-complete:
