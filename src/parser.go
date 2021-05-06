@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/xml"
-	"fmt"
 	"github.com/gojp/kana"
 	"log"
 	"os"
@@ -16,9 +15,9 @@ const (
 )
 
 type entry struct {
-	kanji string
-	kana string
-	def string
+	kanji    string
+	kana     string
+	def      string
 	priority int
 }
 
@@ -36,14 +35,11 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 	decoder := xml.NewDecoder(xmlFile)
 	decoder.Strict = false
 
-
-
 	entries := make([]entry, 1)
 
 	test := 0
 	index := 0
 	for {
-		//fmt.Println(entries[test])
 		token, _ := decoder.Token()
 		if token == nil {
 			break
@@ -85,7 +81,7 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 					entries[index].priority += 10
 				}
 				runes := []rune(priority)
-				if string(runes[0]) + string(runes[1]) == "nf" {
+				if string(runes[0])+string(runes[1]) == "nf" {
 					number, err := strconv.Atoi(string(runes[2]) + string(runes[3]))
 					if err != nil {
 						log.Fatal(err)
@@ -102,9 +98,6 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 					strings.Contains(strings.ToLower(entries[index].kanji), input) ||
 					strings.Contains(strings.ToLower(entries[index].kana), inputHiragana) ||
 					strings.Contains(strings.ToLower(entries[index].kana), inputKatakana) {
-					if index == test && test != 0 {
-						fmt.Println(entries[index].kanji + " added " + " with " + strconv.Itoa(entries[index].priority) + " priority")
-					}
 					entries = append(entries, entry{})
 					index++
 				}
@@ -118,7 +111,6 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 	})
 	if !(entries[0].kanji == "" && entries[0].kana == "" && entries[0].priority == 0) {
 		for i := 0; i < len(entries) && i < entryAmount; i++ {
-			fmt.Printf("Word: %s, Freq: %d\n", entries[i].kanji, entries[i].priority)
 			outputChan <- entries[i]
 		}
 	}
