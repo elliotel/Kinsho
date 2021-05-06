@@ -73,7 +73,6 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		canvas.Refresh(findings)
 		go parseDoc(inputChan, outputChan, complete)
 		inputChan <- strings.ToLower(input.Text)
-		//output := ""
 		found := false
 		finished := false
 		i := 0
@@ -81,7 +80,6 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 			select {
 			case response := <-outputChan:
 				found = true
-				log.Println("Found: " + response.kanji)
 				allResults[i] = container.NewWithoutLayout(widget.NewLabel(response.kanji + "\n" + response.kana + "\n" + response.def))
 				i++
 			case <-complete:

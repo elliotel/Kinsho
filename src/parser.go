@@ -37,7 +37,6 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 
 	entries := make([]entry, 1)
 
-	test := 0
 	index := 0
 	for {
 		token, _ := decoder.Token()
