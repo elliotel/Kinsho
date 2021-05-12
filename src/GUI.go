@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func displayGUI(inOut chan string, complete chan struct{}) {
+func displayGUI(inputChan chan string, outputChan chan entry, complete chan struct{}) {
 	f := app.New()
 
 	w := f.NewWindow("Our「辞書」Dictionary")
@@ -21,8 +21,8 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
 	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
 	logo := widget.NewIcon(lightResource)
-	string := "This publication has included material from the EDICT and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
-	bottomText := widget.NewLabel(string)
+	acknowledgement := "This publication has included material from the JMdict and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
+	bottomText := widget.NewLabel(acknowledgement)
 	bottomText.Wrapping = fyne.TextWrapWord
 	bottomText.Alignment = fyne.TextAlignCenter
 	bottomBox := container.New(
@@ -60,25 +60,58 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 	input := widget.NewEntry()
 	input.SetPlaceHolder("search here")
 
-	results := widget.NewLabel("results")
+	allResults := make([]fyne.CanvasObject, entryAmount)
+	findings := container.NewVBox()
+	findingsScroll := container.NewVScroll(findings)
 
 	searchButton := widget.NewButton("Search", func() {
-		go parseDoc(inOut, complete)
-		inOut <- strings.ToLower(input.Text)
-		select {
-		case response := <-inOut:
-			results.SetText(response)
-			complete <- struct{}{}
-		case <-complete:
-			results.SetText("No results found for \"" + input.Text + "\"")
+		//flytta ner till ny func
+		length := len(findings.Objects)
+		for er := 0; er < length; er++ {
+			findings.Remove(findings.Objects[len(findings.Objects)-1])
 		}
-		canvas.Refresh(results)
+		canvas.Refresh(findings)
+		go parseDoc(inputChan, outputChan, complete)
+		inputChan <- strings.ToLower(input.Text)
+		found := false
+		finished := false
+		i := 0
+		for !finished {
+			select {
+			case response := <-outputChan:
+				found = true
+				result := response.kanji + "\n"
+				for i, r := range response.kana {
+					if i > 0 {
+						result += " | "
+					}
+					result += r
+				}
+				result += "\n" + response.def
+				allResults[i] = container.NewWithoutLayout(widget.NewLabel(result))
+				i++
+			case <-complete:
+				if !found {
+					findings.Add(widget.NewLabel("No results found for \"" + input.Text + "\""))
+				}
+				finished = true
+			}
+		}
+
+		for j := 0; j < i; j++ {
+			findings.Add(allResults[j])
+			findings.Refresh()
+		}
 	})
 
 	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
 
-	findings := container.New(layout.NewHBoxLayout(), results)
-	searchAndResult := container.New(layout.NewVBoxLayout(), search, findings)
+	searchAndResult := container.New(layout.NewBorderLayout(
+		search,
+		nil,
+		nil,
+		nil,
+	), search, findingsScroll)
 
 	w.SetContent(
 		container.New(
@@ -110,4 +143,8 @@ func displayGUI(inOut chan string, complete chan struct{}) {
 	w.Resize(fyne.Size{Height: 360, Width: 640})
 
 	w.ShowAndRun()
+}
+
+func listResults() {
+
 }

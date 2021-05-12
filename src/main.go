@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 )
 
 const (
@@ -16,6 +17,16 @@ func main() {
 		decompressAndDeleteGZ(archiveName)
 	}
 	complete := make(chan struct{})
-	inOut := make(chan string)
-	displayGUI(inOut, complete)
+	inputChan := make(chan string)
+	outputChan := make(chan entry)
+	displayGUI(inputChan, outputChan, complete)
+}
+
+func contains(array []string, s string) bool {
+	for _, val := range array {
+		if strings.ToLower(val) == strings.ToLower(s) {
+			return true
+		}
+	}
+	return false
 }
