@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	entryAmount = 150
+	entryAmount = 20
 )
 
 type entry struct {
 	kanji    string
-	kana     string
+	kana     []string
 	def      string
 	priority int
 }
@@ -57,7 +57,7 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 
 			case "reb":
 				ganaKana := string(token.(xml.CharData))
-				entries[index].kana = ganaKana
+				entries[index].kana = append(entries[index].kana, ganaKana)
 				if input == ganaKana {
 					entries[index].priority += 100
 				}
@@ -93,10 +93,10 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 		case xml.EndElement:
 			if element.Name.Local == "entry" {
 				if strings.Contains(strings.ToLower(entries[index].def), input) ||
-					strings.Contains(strings.ToLower(entries[index].kana), input) ||
+					contains(entries[index].kana, input) ||
 					strings.Contains(strings.ToLower(entries[index].kanji), input) ||
-					strings.Contains(strings.ToLower(entries[index].kana), inputHiragana) ||
-					strings.Contains(strings.ToLower(entries[index].kana), inputKatakana) {
+					contains(entries[index].kana, inputHiragana) ||
+					contains(entries[index].kana, inputKatakana) {
 					entries = append(entries, entry{})
 					index++
 				}
@@ -108,7 +108,7 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].priority > entries[j].priority
 	})
-	if !(entries[0].kanji == "" && entries[0].kana == "" && entries[0].priority == 0) {
+	if !(entries[0].kanji == "" && entries[0].kana == nil && entries[0].priority == 0) {
 		for i := 0; i < len(entries) && i < entryAmount; i++ {
 			outputChan <- entries[i]
 		}

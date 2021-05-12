@@ -80,7 +80,15 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 			select {
 			case response := <-outputChan:
 				found = true
-				allResults[i] = container.NewWithoutLayout(widget.NewLabel(response.kanji + "\n" + response.kana + "\n" + response.def))
+				result := response.kanji + "\n"
+				for i, r := range response.kana {
+					if i > 0 {
+						result += " | "
+					}
+					result += r
+				}
+				result += "\n" + response.def
+				allResults[i] = container.NewWithoutLayout(widget.NewLabel(result))
 				i++
 			case <-complete:
 				if !found {
