@@ -83,7 +83,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 				result := response.kanji + "\n"
 				for i, r := range response.kana {
 					if i > 0 {
-						result += " | "
+						result += "  |  "
 					}
 					result += r
 				}
