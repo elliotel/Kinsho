@@ -17,7 +17,7 @@ const (
 type entry struct {
 	kanji    string
 	kana     []string
-	def      string
+	def      []string
 	priority int
 }
 
@@ -63,8 +63,8 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 				}
 			case "gloss":
 				def := string(token.(xml.CharData))
-				entries[index].def = def
-				if input == def {
+				entries[index].def = append(entries[index].def, def)
+				if input == strings.ToLower(def) {
 					entries[index].priority += 100
 				}
 			case "ke_pri":
@@ -92,7 +92,7 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 
 		case xml.EndElement:
 			if element.Name.Local == "entry" {
-				if strings.Contains(strings.ToLower(entries[index].def), input) ||
+				if contains(entries[index].def, input) ||
 					contains(entries[index].kana, input) ||
 					strings.Contains(strings.ToLower(entries[index].kanji), input) ||
 					contains(entries[index].kana, inputHiragana) ||
