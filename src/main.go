@@ -24,6 +24,15 @@ func main() {
 
 func contains(array []string, s string) bool {
 	for _, val := range array {
+		if strings.Contains(strings.ToLower(val), strings.ToLower(s)) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsExact(array []string, s string) bool {
+	for _, val := range array {
 		if strings.ToLower(val) == strings.ToLower(s) {
 			return true
 		}

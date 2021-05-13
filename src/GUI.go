@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -87,7 +88,9 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 					}
 					result += r
 				}
-				result += "\n" + response.def
+				for i, r := range response.def {
+					result += "\n" + strconv.Itoa(i+1) + ". " + r
+				}
 				allResults[i] = container.NewWithoutLayout(widget.NewLabel(result))
 				i++
 			case <-complete:
