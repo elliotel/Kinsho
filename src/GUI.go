@@ -81,7 +81,14 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 			select {
 			case response := <-outputChan:
 				found = true
-				result := response.kanji + "\n"
+				var result string
+				for i, r := range response.kanji {
+					if i > 0 {
+						result += "  ·  "
+					}
+					result += r
+				}
+				result += "\n"
 				for i, r := range response.kana {
 					if i > 0 {
 						result += "  |  "
