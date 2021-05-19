@@ -24,6 +24,10 @@ type entry struct {
 func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct{}) {
 
 	input := <-inputChan
+	if strings.TrimSpace(input) == "" {
+		complete <- struct{}{}
+		return
+	}
 	inputHiragana := kana.RomajiToHiragana(input)
 	inputKatakana := kana.RomajiToKatakana(input)
 	xmlFile, err := os.Open(resultName)
