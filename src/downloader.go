@@ -205,6 +205,7 @@ func splitXML() {
 
 	wg.Wait()
 
+	xmlFile.Close()
 	if err := os.Remove(dictPath); err != nil {
 		log.Fatal(err)
 	}
@@ -233,5 +234,6 @@ func createXml(xmlEntries []xmlEntry, fileNumber int, wg *sync.WaitGroup) {
 			log.Fatal(err)
 		}
 	}
+	file.Close()
 	wg.Done()
 }
