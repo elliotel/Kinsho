@@ -118,7 +118,6 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		nil,
 	), search, findingsScroll)
 
-
 	w.SetContent(
 		container.New(
 			layout.NewBorderLayout(
