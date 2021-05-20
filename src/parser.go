@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/xml"
 	"github.com/gojp/kana"
+	"io/ioutil"
 	"log"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
@@ -23,6 +25,10 @@ type entry struct {
 
 func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct{}) {
 
+	var wg sync.WaitGroup
+
+	sectionChan := make(chan entry)
+
 	input := <-inputChan
 	if strings.TrimSpace(input) == "" {
 		complete <- struct{}{}
@@ -30,18 +36,51 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 	}
 	inputHiragana := kana.RomajiToHiragana(input)
 	inputKatakana := kana.RomajiToKatakana(input)
-	xmlFile, err := os.Open(resultName)
+
+	entries := make([]entry, 0)
+
+	files, err := ioutil.ReadDir("dictionary/")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer xmlFile.Close()
+
+	for _, file := range files {
+		if strings.Contains(file.Name(), dictName) {
+			wg.Add(1)
+			xmlFile, err := os.Open("dictionary/" + file.Name())
+			if err != nil {
+				log.Fatal(err)
+			}
+			go parseSection(input, inputHiragana, inputKatakana, xmlFile, sectionChan, &wg)
+		}
+	}
+
+	go func() {
+		wg.Wait()
+		close(sectionChan)
+	}()
+
+	for entry := range sectionChan {
+		entries = append(entries, entry)
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].priority > entries[j].priority
+	})
+	if len(entries) > 0 {
+		for i := 0; i < len(entries) && i < entryAmount; i++ {
+			outputChan <- entries[i]
+		}
+	}
+	complete <- struct{}{}
+}
+
+func parseSection(input string, inputHiragana string, inputKatakana string, xmlFile *os.File, sectionChan chan entry, wg *sync.WaitGroup) {
 
 	decoder := xml.NewDecoder(xmlFile)
 	decoder.Strict = false
 
-	entries := make([]entry, 1)
-
-	index := 0
+	var current entry
 	for {
 		token, _ := decoder.Token()
 		if token == nil {
@@ -54,34 +93,34 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 			switch startElement {
 			case "keb":
 				kanji := string(token.(xml.CharData))
-				entries[index].kanji = append(entries[index].kanji, kanji)
+				current.kanji = append(current.kanji, kanji)
 				if input == kanji {
-					entries[index].priority += 100
+					current.priority += 100
 				}
 
 			case "reb":
 				ganaKana := string(token.(xml.CharData))
-				entries[index].kana = append(entries[index].kana, ganaKana)
+				current.kana = append(current.kana, ganaKana)
 				if input == ganaKana {
-					entries[index].priority += 100
+					current.priority += 100
 				}
 			case "gloss":
 				def := string(token.(xml.CharData))
-				entries[index].def = append(entries[index].def, def)
+				current.def = append(current.def, def)
 				if input == strings.ToLower(def) {
-					entries[index].priority += 100
+					current.priority += 100
 				}
 			case "ke_pri":
 				priority := string(token.(xml.CharData))
 				switch priority {
 				case "ichi1":
-					entries[index].priority += 10
+					current.priority += 10
 				case "ichi2":
-					entries[index].priority += 5
+					current.priority += 5
 				case "spec1":
-					entries[index].priority += 30
+					current.priority += 30
 				case "spec2":
-					entries[index].priority += 10
+					current.priority += 10
 				}
 				runes := []rune(priority)
 				if string(runes[0])+string(runes[1]) == "nf" {
@@ -89,33 +128,27 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 					if err != nil {
 						log.Fatal(err)
 					}
-					entries[index].priority += 49 - number
+					current.priority += 49 - number
 				}
 
 			}
 
 		case xml.EndElement:
 			if element.Name.Local == "entry" {
-				if contains(entries[index].def, input) ||
-					contains(entries[index].kana, input) ||
-					contains(entries[index].kanji, input) ||
-					contains(entries[index].kana, inputHiragana) ||
-					contains(entries[index].kana, inputKatakana) {
-					entries = append(entries, entry{})
-					index++
+				if contains(current.def, input) ||
+					contains(current.kana, input) ||
+					contains(current.kanji, input) ||
+					contains(current.kana, inputHiragana) ||
+					contains(current.kana, inputKatakana) {
+					sectionChan <- current
 				}
-				entries[index] = entry{}
+				current = entry{}
 			}
 		}
-
 	}
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].priority > entries[j].priority
-	})
-	if !(entries[0].kanji == nil && entries[0].kana == nil && entries[0].priority == 0) {
-		for i := 0; i < len(entries) && i < entryAmount; i++ {
-			outputChan <- entries[i]
-		}
+	wg.Done()
+	err := xmlFile.Close()
+	if err != nil {
+		log.Fatal(err)
 	}
-	complete <- struct{}{}
 }

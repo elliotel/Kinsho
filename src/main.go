@@ -6,15 +6,17 @@ import (
 )
 
 const (
-	archiveName = "JMdict_e.gz"
-	resultName  = "JMdict_e"
+	archivePath = "dictionary/JMdict_e.gz"
+	dictPath    = "dictionary/JMdict_e"
+	dictName    = "JMdict_e"
 )
 
 func main() {
 
-	if _, err := os.Stat(resultName); os.IsNotExist(err) {
+	if _, err := os.Stat(dictPath + "_0"); os.IsNotExist(err) {
 		downloadJMdict()
-		decompressAndDeleteGZ(archiveName)
+		decompressAndDeleteGZ(archivePath)
+		splitXML()
 	}
 	complete := make(chan struct{})
 	inputChan := make(chan string)
