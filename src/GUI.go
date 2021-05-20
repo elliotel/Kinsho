@@ -19,6 +19,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 
 	f.Settings().SetTheme(&japaneseTheme{})
 
+	updating := false
 	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
 	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
 	logo := widget.NewIcon(lightResource)
@@ -30,6 +31,13 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		layout.NewMaxLayout(),
 		bottomText,
 	)
+
+	input := widget.NewEntry()
+	input.SetPlaceHolder("search here")
+
+	allResults := make([]fyne.CanvasObject, entryAmount)
+	findings := container.NewVBox()
+	findingsScroll := container.NewVScroll(findings)
 
 	if err != nil {
 		log.Fatal(err)
@@ -47,10 +55,22 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		logo.Refresh()
 	})
 
-	b2 := widget.NewButton("Update JMdict", func() {
+	var updateLabel widget.Label
+	updateLabel.Text = "Update JMdict"
+	updateLabel.Wrapping = fyne.TextWrapWord
+
+	b2 := widget.NewButton(updateLabel.Text, func() {
+		updating = true
+		clearContainer(findings)
+		findings.Add(container.NewWithoutLayout(widget.NewLabel("Updating the dictionary, please wait")))
 		downloadJMdict()
 		decompressAndDeleteGZ(archiveName)
+		clearContainer(findings)
+		findings.Add(container.NewWithoutLayout(widget.NewLabel("Update complete!")))
+		updating = false
 	})
+
+	b2.Resize(fyne.Size{Height: 50, Width: 50})
 
 	buttons := container.New(
 		layout.NewGridLayoutWithRows(2),
@@ -58,20 +78,8 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		b2,
 	)
 
-	input := widget.NewEntry()
-	input.SetPlaceHolder("search here")
-
-	allResults := make([]fyne.CanvasObject, entryAmount)
-	findings := container.NewVBox()
-	findingsScroll := container.NewVScroll(findings)
-
 	searchButton := widget.NewButton("Search", func() {
-		//flytta ner till ny func
-		length := len(findings.Objects)
-		for er := 0; er < length; er++ {
-			findings.Remove(findings.Objects[len(findings.Objects)-1])
-		}
-		canvas.Refresh(findings)
+		clearContainer(findings)
 		go parseDoc(inputChan, outputChan, complete)
 		inputChan <- strings.ToLower(input.Text)
 		found := false
@@ -105,6 +113,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 			findings.Add(allResults[j])
 			findings.Refresh()
 		}
+		findingsScroll.Refresh()
 	})
 
 	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
@@ -143,11 +152,15 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		),
 	)
 
-	w.Resize(fyne.Size{Height: 360, Width: 640})
+	w.Resize(fyne.Size{Height: 600, Width: 800})
 
 	w.ShowAndRun()
 }
 
-func listResults() {
-
+func clearContainer(c *fyne.Container) {
+	length := len(c.Objects)
+	for er := 0; er < length; er++ {
+		c.Remove(c.Objects[len(c.Objects)-1])
+	}
+	canvas.Refresh(c)
 }
