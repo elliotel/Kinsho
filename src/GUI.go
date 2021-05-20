@@ -10,11 +10,9 @@ import (
 	"strings"
 )
 
-const(
+const (
 	internetErrorMsg = "Unable to download JMdict, please check your internet connection"
 )
-
-
 
 func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, complete chan struct{}) {
 	w := f.NewWindow("「近書」Kinsho")
@@ -23,16 +21,15 @@ func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, comple
 
 	lightImage := &canvas.Image{
 		File:     "img/jisho_logo_light.png", // file path to image
-		FillMode: canvas.ImageFillContain,      // constrains aspect ratio
+		FillMode: canvas.ImageFillContain,    // constrains aspect ratio
 	}
 	darkImage := &canvas.Image{
 		File:     "img/jisho_logo_dark.png", // file path to image
-		FillMode: canvas.ImageFillContain,      // constrains aspect ratio
+		FillMode: canvas.ImageFillContain,   // constrains aspect ratio
 	}
 
 	lightImage.SetMinSize(fyne.Size{Width: 700, Height: 150})
 	darkImage.SetMinSize(fyne.Size{Width: 700, Height: 150})
-
 
 	logo := container.NewMax(lightImage)
 	acknowledgement := "This publication has included material from the JMdict dictionary file in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
@@ -66,10 +63,10 @@ func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, comple
 	})
 
 	b2 := widget.NewButton("Update JMdict", func() {
-		if !connected(){
+		if !connected() {
 			clearContainer(findings)
 			findings.Add(container.NewWithoutLayout(widget.NewLabel(internetErrorMsg)))
-		}else {
+		} else {
 			clearContainer(findings)
 			findings.Add(container.NewWithoutLayout(widget.NewLabel("Updating the dictionary, please wait")))
 			downloadJMdict()
@@ -160,14 +157,14 @@ func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, comple
 			),
 			logo,
 			container.New(
-					layout.NewBorderLayout(
-						nil,
-						nil,
-						buttons,
-						nil,
-					),
+				layout.NewBorderLayout(
+					nil,
+					nil,
 					buttons,
-					searchAndResult,
+					nil,
+				),
+				buttons,
+				searchAndResult,
 			),
 			bottomBox,
 		),
@@ -178,7 +175,7 @@ func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, comple
 	w.ShowAndRun()
 }
 
-func displayConnectionError(f fyne.App) fyne.Window{
+func displayConnectionError(f fyne.App) fyne.Window {
 	w := f.NewWindow("Connection Error")
 	w.SetContent(widget.NewLabel(internetErrorMsg))
 	return w

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -15,8 +17,14 @@ const (
 
 func main() {
 	f := app.New()
+	icon, err := fyne.LoadResourceFromPath("img/kinsho_icon.png")
+	if err != nil {
+		log.Fatal()
+	}
+	f.SetIcon(icon)
+
 	if _, err := os.Stat(dictPath + "_0"); os.IsNotExist(err) {
-		if !connected(){
+		if !connected() {
 			displayConnectionError(f).ShowAndRun()
 		} else {
 			downloadJMdict()
@@ -27,7 +35,7 @@ func main() {
 	complete := make(chan struct{})
 	inputChan := make(chan string)
 	outputChan := make(chan entry)
-	displayGUI(f,inputChan, outputChan, complete)
+	displayGUI(f, inputChan, outputChan, complete)
 }
 
 func connected() bool {
