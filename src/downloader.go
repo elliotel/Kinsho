@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	entriesPerFile = 800000
+	entriesPerFile = 1000000
 )
 
 type xmlEntry struct {
@@ -199,6 +199,9 @@ func splitXML() {
 			xmlEntries = make([]xmlEntry, 0)
 		}
 	}
+
+	wg.Add(1)
+	go createXml(xmlEntries, fileNumber, &wg)
 
 	wg.Wait()
 

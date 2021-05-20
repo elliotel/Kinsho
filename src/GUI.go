@@ -2,7 +2,6 @@ package main
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -11,19 +10,23 @@ import (
 	"strings"
 )
 
-func displayGUI(inputChan chan string, outputChan chan entry, complete chan struct{}) {
-	f := app.New()
+const(
+	internetErrorMsg = "Unable to download JMdict, please check your internet connection"
+)
 
+
+
+func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, complete chan struct{}) {
 	w := f.NewWindow("「近書」Kinsho")
 
 	f.Settings().SetTheme(&japaneseTheme{})
 
 	lightImage := &canvas.Image{
-		File:     "jisho_logo_light.png", // file path to image
+		File:     "img/jisho_logo_light.png", // file path to image
 		FillMode: canvas.ImageFillContain,      // constrains aspect ratio
 	}
 	darkImage := &canvas.Image{
-		File:     "jisho_logo_dark.png", // file path to image
+		File:     "img/jisho_logo_dark.png", // file path to image
 		FillMode: canvas.ImageFillContain,      // constrains aspect ratio
 	}
 
@@ -63,13 +66,18 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	})
 
 	b2 := widget.NewButton("Update JMdict", func() {
-		clearContainer(findings)
-		findings.Add(container.NewWithoutLayout(widget.NewLabel("Updating the dictionary, please wait")))
-		downloadJMdict()
-		decompressAndDeleteGZ(archivePath)
-		splitXML()
-		clearContainer(findings)
-		findings.Add(container.NewWithoutLayout(widget.NewLabel("Update complete!")))
+		if !connected(){
+			clearContainer(findings)
+			findings.Add(container.NewWithoutLayout(widget.NewLabel(internetErrorMsg)))
+		}else {
+			clearContainer(findings)
+			findings.Add(container.NewWithoutLayout(widget.NewLabel("Updating the dictionary, please wait")))
+			downloadJMdict()
+			decompressAndDeleteGZ(archivePath)
+			splitXML()
+			clearContainer(findings)
+			findings.Add(container.NewWithoutLayout(widget.NewLabel("Update complete!")))
+		}
 	})
 
 	buttons := container.New(
@@ -78,51 +86,59 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		b2,
 	)
 
+	searching := false
 	searchButton := widget.NewButton("Search", func() {
-		clearContainer(findings)
-		go parseDoc(inputChan, outputChan, complete)
-		inputChan <- strings.ToLower(input.Text)
-		found := false
-		finished := false
-		i := 0
-		for !finished {
-			select {
-			case response := <-outputChan:
-				found = true
-				var result string
-				for i, r := range response.kanji {
-					if i > 0 {
-						result += "  ·  "
-					}
-					result += r
-				}
-				result += "\n"
-				for i, r := range response.kana {
-					if i > 0 {
-						result += "  |  "
-					}
-					result += r
-				}
-				for i, r := range response.def {
-					result += "\n" + strconv.Itoa(i+1) + ". " + r
-				}
-				labResult := widget.NewLabel(result)
-				labResult.Wrapping = fyne.TextWrapWord
-				allResults[i] = container.NewWithoutLayout(labResult)
-				i++
-			case <-complete:
-				if !found {
-					findings.Add(widget.NewLabel("No results found for \"" + input.Text + "\""))
-				}
-				finished = true
+		go func() {
+			if searching {
+				return
 			}
-		}
+			searching = true
+			clearContainer(findings)
+			go parseDoc(inputChan, outputChan, complete)
+			inputChan <- strings.ToLower(input.Text)
+			found := false
+			finished := false
+			i := 0
+			for !finished {
+				select {
+				case response := <-outputChan:
+					found = true
+					var result string
+					for i, r := range response.kanji {
+						if i > 0 {
+							result += "  ·  "
+						}
+						result += r
+					}
+					result += "\n"
+					for i, r := range response.kana {
+						if i > 0 {
+							result += "  |  "
+						}
+						result += r
+					}
+					for i, r := range response.def {
+						result += "\n" + strconv.Itoa(i+1) + ". " + r
+					}
+					labResult := widget.NewLabel(result)
+					labResult.Wrapping = fyne.TextWrapWord
+					allResults[i] = container.NewWithoutLayout(labResult)
+					i++
+				case <-complete:
+					if !found {
+						findings.Add(widget.NewLabel("No results found for \"" + input.Text + "\""))
+					}
+					finished = true
+				}
+			}
 
-		for j := 0; j < i; j++ {
-			findings.Add(allResults[j])
-			findings.Refresh()
-		}
-		findingsScroll.Refresh()
+			for j := 0; j < i; j++ {
+				findings.Add(allResults[j])
+				findings.Refresh()
+			}
+			findingsScroll.Refresh()
+			searching = false
+		}()
 	})
 
 	search := container.New(layout.NewBorderLayout(nil, nil, nil, searchButton), searchButton, input)
@@ -160,6 +176,12 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	w.Resize(fyne.Size{Height: 700, Width: 900})
 
 	w.ShowAndRun()
+}
+
+func displayConnectionError(f fyne.App) fyne.Window{
+	w := f.NewWindow("Connection Error")
+	w.SetContent(widget.NewLabel(internetErrorMsg))
+	return w
 }
 
 func clearContainer(c *fyne.Container) {

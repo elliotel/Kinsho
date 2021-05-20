@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fyne.io/fyne/v2/app"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -12,16 +14,28 @@ const (
 )
 
 func main() {
-
+	f := app.New()
 	if _, err := os.Stat(dictPath + "_0"); os.IsNotExist(err) {
-		downloadJMdict()
-		decompressAndDeleteGZ(archivePath)
-		splitXML()
+		if !connected(){
+			displayConnectionError(f).ShowAndRun()
+		} else {
+			downloadJMdict()
+			decompressAndDeleteGZ(archivePath)
+			splitXML()
+		}
 	}
 	complete := make(chan struct{})
 	inputChan := make(chan string)
 	outputChan := make(chan entry)
-	displayGUI(inputChan, outputChan, complete)
+	displayGUI(f,inputChan, outputChan, complete)
+}
+
+func connected() bool {
+	_, err := http.Get("http://ftp.edrdg.org/pub/Nihongo/JMdict_e.gz")
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 func contains(array []string, s string) bool {
