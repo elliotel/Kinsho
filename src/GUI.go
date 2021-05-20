@@ -19,11 +19,10 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 
 	f.Settings().SetTheme(&japaneseTheme{})
 
-	updating := false
 	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
 	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
 	logo := widget.NewIcon(lightResource)
-	acknowledgement := "This publication has included material from the JMdict and KANJIDIC dictionary files in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
+	acknowledgement := "This publication has included material from the JMdict dictionary file in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
 	bottomText := widget.NewLabel(acknowledgement)
 	bottomText.Wrapping = fyne.TextWrapWord
 	bottomText.Alignment = fyne.TextAlignCenter
@@ -55,22 +54,14 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		logo.Refresh()
 	})
 
-	var updateLabel widget.Label
-	updateLabel.Text = "Update JMdict"
-	updateLabel.Wrapping = fyne.TextWrapWord
-
-	b2 := widget.NewButton(updateLabel.Text, func() {
-		updating = true
+	b2 := widget.NewButton("Update JMdict", func() {
 		clearContainer(findings)
 		findings.Add(container.NewWithoutLayout(widget.NewLabel("Updating the dictionary, please wait")))
 		downloadJMdict()
 		decompressAndDeleteGZ(archiveName)
 		clearContainer(findings)
 		findings.Add(container.NewWithoutLayout(widget.NewLabel("Update complete!")))
-		updating = false
 	})
-
-	b2.Resize(fyne.Size{Height: 50, Width: 50})
 
 	buttons := container.New(
 		layout.NewGridLayoutWithRows(2),
@@ -99,7 +90,9 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 				for i, r := range response.def {
 					result += "\n" + strconv.Itoa(i+1) + ". " + r
 				}
-				allResults[i] = container.NewWithoutLayout(widget.NewLabel(result))
+				labResult := widget.NewLabel(result)
+				labResult.Wrapping = fyne.TextWrapWord
+				allResults[i] = container.NewWithoutLayout(labResult)
 				i++
 			case <-complete:
 				if !found {
@@ -125,6 +118,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		nil,
 	), search, findingsScroll)
 
+
 	w.SetContent(
 		container.New(
 			layout.NewBorderLayout(
@@ -134,7 +128,6 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 				nil,
 			),
 			container.New(
-
 				layout.NewGridLayout(1),
 				logo,
 				container.New(
@@ -152,7 +145,7 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 		),
 	)
 
-	w.Resize(fyne.Size{Height: 600, Width: 800})
+	w.Resize(fyne.Size{Height: 700, Width: 900})
 
 	w.ShowAndRun()
 }
