@@ -7,7 +7,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -15,13 +14,24 @@ import (
 func displayGUI(inputChan chan string, outputChan chan entry, complete chan struct{}) {
 	f := app.New()
 
-	w := f.NewWindow("Our「辞書」Dictionary")
+	w := f.NewWindow("「近書」Kinsho")
 
 	f.Settings().SetTheme(&japaneseTheme{})
 
-	lightResource, err := fyne.LoadResourceFromPath("jisho_logo_light.png")
-	darkResource, err := fyne.LoadResourceFromPath("jisho_logo_dark.png")
-	logo := widget.NewIcon(lightResource)
+	lightImage := &canvas.Image{
+		File:     "jisho_logo_light.png", // file path to image
+		FillMode: canvas.ImageFillContain,      // constrains aspect ratio
+	}
+	darkImage := &canvas.Image{
+		File:     "jisho_logo_dark.png", // file path to image
+		FillMode: canvas.ImageFillContain,      // constrains aspect ratio
+	}
+
+	lightImage.SetMinSize(fyne.Size{Width: 700, Height: 150})
+	darkImage.SetMinSize(fyne.Size{Width: 700, Height: 150})
+
+
+	logo := container.NewMax(lightImage)
 	acknowledgement := "This publication has included material from the JMdict dictionary file in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
 	bottomText := widget.NewLabel(acknowledgement)
 	bottomText.Wrapping = fyne.TextWrapWord
@@ -38,17 +48,15 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	findings := container.NewVBox()
 	findingsScroll := container.NewVScroll(findings)
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	b1 := widget.NewButton("Toggle Theme", func() {
 		if themeVariant != 0 {
 			setDarkTheme()
-			logo.SetResource(darkResource)
+			logo.Remove(lightImage)
+			logo.Add(darkImage)
 		} else {
 			setLightTheme()
-			logo.SetResource(lightResource)
+			logo.Remove(darkImage)
+			logo.Add(lightImage)
 		}
 		f.Settings().SetTheme(&japaneseTheme{})
 		logo.Refresh()
@@ -129,15 +137,13 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 	w.SetContent(
 		container.New(
 			layout.NewBorderLayout(
-				nil,
+				logo,
 				bottomBox,
 				nil,
 				nil,
 			),
+			logo,
 			container.New(
-				layout.NewGridLayout(1),
-				logo,
-				container.New(
 					layout.NewBorderLayout(
 						nil,
 						nil,
@@ -146,7 +152,6 @@ func displayGUI(inputChan chan string, outputChan chan entry, complete chan stru
 					),
 					buttons,
 					searchAndResult,
-				),
 			),
 			bottomBox,
 		),
