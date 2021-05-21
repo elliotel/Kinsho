@@ -100,7 +100,7 @@ func parseSection(input string, inputHiragana string, inputKatakana string, xmlF
 			case "reb":
 				ganaKana := string(token.(xml.CharData))
 				current.kana = append(current.kana, ganaKana)
-				if input == ganaKana {
+				if input == ganaKana || inputHiragana == ganaKana || inputKatakana == ganaKana {
 					current.priority += 100
 				}
 			case "gloss":
