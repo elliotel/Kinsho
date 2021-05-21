@@ -1,7 +1,7 @@
 ![](img/kinsho_icon.png)
 # 「近書」Kinsho 
 
-「近書」Kinsho is a simple digital Japanse-English dictionary utilizing JMdict. The user can search for Japanese or English words and find the most common and accurate translation in the opposite language.
+「近書」Kinsho is a simple digital Japanse-English dictionary utilizing JMdict_e. The user can search for Japanese or English words and find the most common and accurate translation in the opposite language.
 Japanese search terms can be written in kanji, hiragana and romaji, and will regardless produce the same results. The dictionary XML files are stored locally, as to not require the user to have internet access.
 
 ![](img/example_light.png) ![](img/example_dark.png)
@@ -19,7 +19,7 @@ The MVP of this project is a product able to load JMdict, and parse through its 
 - Using camelCase and PascalCase, for private and public access respectively
 
 #### Acknowledgement
-This publication has included material from the JMdict dictionary file in accordance with the licence provisions of the Electronic Dictionaries Research Group. (See http://www.edrdg.org/)
+This publication has included material from the JMdict_e dictionary file in accordance with the licence provisions of the Electronic Dictionaries Research Group. (See http://www.edrdg.org/)
 
 The GUI aspects were implemented using fyne<span>.</span>io (See https://github.com/fyne-io/fyne)
 
