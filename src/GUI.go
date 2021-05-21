@@ -16,7 +16,7 @@ const (
 
 func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, complete chan struct{}) {
 	w := f.NewWindow("「近書」Kinsho")
-ä
+
 	f.Settings().SetTheme(&japaneseTheme{})
 
 	lightImage := &canvas.Image{
