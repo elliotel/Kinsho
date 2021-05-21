@@ -76,7 +76,6 @@ func parseDoc(inputChan chan string, outputChan chan entry, complete chan struct
 }
 
 func parseSection(input string, inputHiragana string, inputKatakana string, xmlFile *os.File, sectionChan chan entry, wg *sync.WaitGroup) {
-
 	decoder := xml.NewDecoder(xmlFile)
 	decoder.Strict = false
 

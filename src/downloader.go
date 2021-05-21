@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	entriesPerFile = 1000000
+	entriesPerFile = 25000
 )
 
 type xmlEntry struct {
@@ -153,7 +153,7 @@ func splitXML() {
 
 	decoder := xml.NewDecoder(xmlFile)
 	decoder.Strict = false
-	xmlEntries := make([]xmlEntry, 1)
+	xmlEntries := make([]xmlEntry, 0)
 
 	var current xmlEntry
 	fileNumber := 0
@@ -185,18 +185,26 @@ func splitXML() {
 
 		case xml.EndElement:
 			if element.Name.Local == "entry" {
-				xmlEntries = append(xmlEntries, current)
-				current = xmlEntry{}
+				if !(len(current.Kanjis.Kanji) == 0 &&
+					len(current.GanaKanas.GanaKana) == 0 &&
+					len(current.Defs.Def) == 0 &&
+					len(current.Prioritys.Priority) == 0 ) {
+					xmlEntries = append(xmlEntries, current)
+					current = xmlEntry{}
+					runs++
+				}
+
 			}
 
 		}
-		runs++
 		if runs%entriesPerFile == 0 {
 
-			wg.Add(1)
-			go createXml(xmlEntries, fileNumber, &wg)
+			if len(xmlEntries) > 0 {
+				wg.Add(1)
+				go createXml(xmlEntries, fileNumber, &wg)
 			fileNumber++
 			xmlEntries = make([]xmlEntry, 0)
+			}
 		}
 	}
 
