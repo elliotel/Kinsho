@@ -10,7 +10,7 @@ Japanese search terms can be written in kanji, hiragana and romaji, and will reg
 Additional features include the ability to switch between light mode and dark mode, and updating the dictionary in order to get the latest edition.
 
 #### Minimum viable product
-The MVP of this project is a product able to load JMdict, and parse through its contents. The user is able to use a search function to find relevant vocabulary and kanji using English or Japanese search terms. The program also has a simple graphical user interface.
+The MVP of this project is a product able to load JMdict_e, and parse through its contents. The user is able to use a search function to find relevant vocabulary and kanji using English or Japanese search terms. The program also has a simple graphical user interface.
 
 #### Coding conventions
 - Written in the language Go

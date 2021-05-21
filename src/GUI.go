@@ -16,7 +16,7 @@ const (
 
 func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, complete chan struct{}) {
 	w := f.NewWindow("「近書」Kinsho")
-
+ä
 	f.Settings().SetTheme(&japaneseTheme{})
 
 	lightImage := &canvas.Image{
@@ -32,7 +32,7 @@ func displayGUI(f fyne.App, inputChan chan string, outputChan chan entry, comple
 	darkImage.SetMinSize(fyne.Size{Width: 700, Height: 150})
 
 	logo := container.NewMax(lightImage)
-	acknowledgement := "This publication has included material from the JMdict dictionary file in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
+	acknowledgement := "This publication has included material from the JMdict_e dictionary file in accordance with the licence provisions of the Electronic Dictionaries Research Group. See http://www.edrdg.org/"
 	bottomText := widget.NewLabel(acknowledgement)
 	bottomText.Wrapping = fyne.TextWrapWord
 	bottomText.Alignment = fyne.TextAlignCenter
